@@ -17,7 +17,7 @@ jobs:
     - name: Find .7z file
       id: find_file
       run: |
-        FILE=$(find ../ -name "*.7z" | head -n 1)
+        FILE=$(find /root -name "*.7z" | head -n 1)
         if [ -z "$FILE" ]; then
           echo "❌ No .7z file found."
           exit 1
