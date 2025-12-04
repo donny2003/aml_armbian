@@ -1,0 +1,44 @@
+name: Auto Release Firmware
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Find .7z file
+      id: find_file
+      run: |
+        FILE=$(find . -name "*.7z" | head -n 1)
+        if [ -z "$FILE" ]; then
+          echo "❌ No .7z file found."
+          exit 1
+        fi
+        echo "file=$FILE" >> $GITHUB_OUTPUT
+
+    - name: Auto-generate version
+      id: version
+      run: |
+        DATE=$(date +"%Y%m%d")
+        TIME=$(date +"%H%M")
+        VERSION="v${DATE}-${TIME}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        name: "Auto Release ${{ steps.version.outputs.version }}"
+        draft: false
+        prerelease: false
+        files: ${{ steps.find_file.outputs.file }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
